@@ -1,5 +1,4 @@
 import argparse
-import torch
 import json
 import logging
 from pathlib import Path
@@ -13,7 +12,7 @@ from farm.modeling.language_model import LanguageModel
 from farm.modeling.optimization import initialize_optimizer
 from farm.modeling.prediction_head import BertLMHead, NextSentenceHead
 from farm.train import Trainer
-from farm.utils import set_all_seeds, MLFlowLogger
+from farm.utils import set_all_seeds, MLFlowLogger, initialize_device_settings
 
 
 def parse_arguments():
@@ -26,34 +25,11 @@ def parse_arguments():
     return args
 
 
-def initialize_device_settings(use_cuda, args, local_rank=-1, use_amp=None):
-    if not use_cuda:
-        device = torch.device("cpu")
-        n_gpu = 0
-    elif args.local_rank == -1:
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        if not torch.cuda.is_available():
-            n_gpu = 0
-        else:
-            n_gpu = torch.cuda.device_count()
-    else:
-        torch.cuda.set_device(args.local_rank)
-        device = torch.device("cuda", args.local_rank)
-        n_gpu = 1
-        # Initializes the distributed backend which will take care of sychronizing nodes/GPUs
-        torch.distributed.init_process_group(backend="nccl")
-    print(
-        "device: {} n_gpu: {}, distributed training: {}, automatic mixed precision training: {}".format(
-            device, n_gpu, bool(args.local_rank != -1), use_amp
-        )
-    )
-    return device, n_gpu
-
 def train_from_scratch():
 
     # We need the local rank argument for DDP
     args = parse_arguments()
-    use_amp = "O2"
+    use_amp = None #"O2"
 
     logging.basicConfig(
         format="%(asctime)s - %(levelname)s - %(name)s -   %(message)s",
@@ -75,8 +51,8 @@ def train_from_scratch():
     #dev_filename = "dev.txt"
 
     max_seq_len = 128
-    batch_size = 80
-    grad_acc = 3
+    batch_size = 60
+    grad_acc = 4
     learning_rate = 0.0001
     warmup_proportion = 0.01
     n_epochs = 1
