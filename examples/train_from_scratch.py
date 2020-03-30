@@ -42,7 +42,7 @@ def train_from_scratch():
 
     set_all_seeds(seed=39)
     #device, n_gpu = initialize_device_settings(use_cuda=True)
-    device, n_gpu = initialize_device_settings(use_cuda=True, args=args, use_amp=use_amp)
+    device, n_gpu = initialize_device_settings(use_cuda=True, local_rank=args.local_rank, use_amp=use_amp)
     evaluate_every = 10000
 
     save_dir = Path("saved_models/train_from_scratch")
@@ -74,7 +74,8 @@ def train_from_scratch():
 
     # 3. Create a DataSilo that loads several datasets (train/dev/test), provides DataLoaders for them and
     #    calculates a few descriptive statistics of our datasets
-    stream_data_silo = StreamingDataSilo(processor=processor, batch_size=batch_size, distributed=True)
+    stream_data_silo = StreamingDataSilo(processor=processor, batch_size=batch_size, distributed=True,
+                                         dataloader_workers=16)
     
     # 4. Create an AdaptiveModel
     # a) which consists of a pretrained language model as a basis
