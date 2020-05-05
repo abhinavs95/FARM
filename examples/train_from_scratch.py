@@ -28,7 +28,7 @@ def parse_arguments():
 def train_from_scratch():
     # We need the local rank argument for DDP
     args = parse_arguments()
-    use_amp = None  # "O2"
+    use_amp = "O2"
 
     logging.basicConfig(
         format="%(asctime)s - %(levelname)s - %(name)s -   %(message)s",
@@ -50,11 +50,11 @@ def train_from_scratch():
     # dev_filename = "dev.txt"
 
     max_seq_len = 128
-    batch_size = 60
-    grad_acc = 4
+    batch_size = 80
+    grad_acc = 3
     learning_rate = 0.0001
     warmup_proportion = 0.01
-    n_epochs = 1
+    n_epochs = 5
     vocab_file = "bert-base-uncased-vocab.txt"
 
     # 1.Create a tokenizer
@@ -62,12 +62,13 @@ def train_from_scratch():
     # tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
 
     # 2. Create a DataProcessor that handles all the conversion from raw text into a PyTorch Dataset
+    # limiting max docs to divisible of 64 (world_size * num_workers)
     processor = BertStyleLMProcessor(
         data_dir=data_dir,
         tokenizer=tokenizer, max_seq_len=max_seq_len,
         train_filename=train_filename,
         dev_filename=None,
-        test_filename=None,
+        test_filename=None
     )
 
     # 3. Create a DataSilo that loads several datasets (train/dev/test), provides DataLoaders for them and
@@ -131,8 +132,8 @@ def train_from_scratch():
     trainer.train()
 
     # 8. Hooray! You have a model. Store it:
-    model.save(save_dir)
-    processor.save(save_dir)
+ #   model.save(save_dir)
+ #   processor.save(save_dir)
 
 
 if __name__ == "__main__":

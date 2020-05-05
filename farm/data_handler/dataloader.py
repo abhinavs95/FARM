@@ -68,9 +68,10 @@ class NamedDataLoader(DataLoader):
 
     def __len__(self):
         if type(self.dataset).__name__ == "_StreamingDataSet":
-            num_samples = len(self.dataset)
-            num_batches = ceil(num_samples / self.dataset.batch_size)
-            return num_batches
+            return 4096
+            #num_samples = len(self.dataset)
+            #num_batches = ceil(num_samples / (self.dataset.batch_size * 4))
+            #return num_batches
         else:
             return super().__len__()
 

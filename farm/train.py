@@ -227,6 +227,7 @@ class Trainer:
             self.from_epoch = epoch
             train_data_loader = self.data_silo.get_data_loader("train")
             progress_bar = tqdm(train_data_loader)
+            loop_step = 0
             for step, batch in enumerate(progress_bar):
                 # when resuming training from a checkpoint, we want to fast forward to the step of the checkpoint
                 if resume_from_step and step <= resume_from_step:
@@ -273,7 +274,9 @@ class Trainer:
                     break
                 self.global_step += 1
                 self.from_step = step
-
+                loop_step += 1
+                if loop_step == 4096:
+                    break
                 # save the current state as a checkpoint before exiting if a SIGTERM signal is received
                 if self.sigterm_handler and self.sigterm_handler.kill_now:
                     logger.info("Received a SIGTERM signal. Saving the current train state as a checkpoint ...")
@@ -283,7 +286,7 @@ class Trainer:
                 # save a checkpoint and continue train
                 if self.checkpoint_every and step % self.checkpoint_every == 0:
                     self._save()
-
+            del train_data_loader
             if do_stopping:
                 break
 

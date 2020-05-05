@@ -615,14 +615,14 @@ class _StreamingDataSet(IterableDataset):
                 total_chunks = self.world_size * worker_info.num_workers
 
                 dicts = stream_grouper(
-                    self.file_to_dicts_generator, n=10, worker_id=chunk_id, total_workers=total_chunks
+                    self.file_to_dicts_generator, n=8, worker_id=chunk_id, total_workers=total_chunks
                 )
             else:
                 worker_id = worker_info.id
-                dicts = stream_grouper(self.file_to_dicts_generator, n=10, worker_id=chunk_id, total_workers=total_chunks)
+                dicts = stream_grouper(self.file_to_dicts_generator, n=8, worker_id=chunk_id, total_workers=total_chunks)
 
         else:
-            dicts = grouper(self.file_to_dicts_generator, n=10)
+            dicts = grouper(self.file_to_dicts_generator, n=8)
 
         results = map(self._dataset_from_chunk, dicts)
 
